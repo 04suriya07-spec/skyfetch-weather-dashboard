@@ -12,6 +12,13 @@ function WeatherApp(apiKey) {
     this.searchBtn = document.getElementById('search-btn');
     this.cityInput = document.getElementById('city-input');
     this.weatherDisplay = document.getElementById('weather-display');
+    this.recentSearchesSection = document.getElementById('recent-searches-section');
+    this.recentSearchesContainer = document.getElementById('recent-searches-container');
+    this.clearBtn = document.getElementById('clear-history-btn');
+
+    // Recent Searches State
+    this.recentSearches = [];
+    this.maxRecentSearches = 5;
 
     // Initialize App
     this.init();
@@ -30,8 +37,13 @@ WeatherApp.prototype.init = function () {
         }
     }.bind(this));
 
-    // Show initial welcome message
-    this.showWelcome();
+    if (this.clearBtn) {
+        this.clearBtn.addEventListener('click', this.clearHistory.bind(this));
+    }
+
+    // Load saved data
+    this.loadRecentSearches();
+    this.loadLastCity();
 };
 
 /**
@@ -85,6 +97,10 @@ WeatherApp.prototype.getWeather = async function (city) {
         this.displayWeather(currentWeatherRes.data);
         this.displayForecast(forecastRes.data);
 
+        // Save successful search
+        this.saveRecentSearch(city);
+        localStorage.setItem('lastCity', city);
+
     } catch (error) {
         console.error('Error fetching data:', error);
 
@@ -97,6 +113,7 @@ WeatherApp.prototype.getWeather = async function (city) {
         // Re-enable controls
         this.searchBtn.disabled = false;
         this.searchBtn.innerHTML = '🔍 Search';
+        this.cityInput.focus();
     }
 };
 
@@ -208,9 +225,100 @@ WeatherApp.prototype.showWelcome = function () {
     this.weatherDisplay.innerHTML = `
         <div class="welcome-message">
             <h2>🌍 Welcome to SkyFetch</h2>
-            <p>Enter a city name above to see current weather and a 5-day forecast!</p>
+            <p>Start your journey by searching for a city above!</p>
+            <p style="font-size: 0.9rem; margin-top: 15px; opacity: 0.8;">
+                Try searching for: London, New York, or Tokyo
+            </p>
         </div>
     `;
+};
+
+/**
+ * Persistence: Load recent searches from localStorage
+ */
+WeatherApp.prototype.loadRecentSearches = function () {
+    const saved = localStorage.getItem('recentSearches');
+    if (saved) {
+        this.recentSearches = JSON.parse(saved);
+        this.displayRecentSearches();
+    }
+};
+
+/**
+ * Persistence: Save a new city to recent searches
+ * @param {string} city 
+ */
+WeatherApp.prototype.saveRecentSearch = function (city) {
+    // title case
+    const cityName = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+
+    // Remove duplicates
+    const index = this.recentSearches.indexOf(cityName);
+    if (index > -1) {
+        this.recentSearches.splice(index, 1);
+    }
+
+    // Add to front
+    this.recentSearches.unshift(cityName);
+
+    // Limit size
+    if (this.recentSearches.length > this.maxRecentSearches) {
+        this.recentSearches.pop();
+    }
+
+    // Persist
+    localStorage.setItem('recentSearches', JSON.stringify(this.recentSearches));
+    this.displayRecentSearches();
+};
+
+/**
+ * UI: Render recent search buttons
+ */
+WeatherApp.prototype.displayRecentSearches = function () {
+    this.recentSearchesContainer.innerHTML = '';
+
+    if (this.recentSearches.length === 0) {
+        this.recentSearchesSection.style.display = 'none';
+        return;
+    }
+
+    this.recentSearchesSection.style.display = 'block';
+
+    this.recentSearches.forEach(city => {
+        const btn = document.createElement('button');
+        btn.className = 'recent-search-btn';
+        btn.textContent = city;
+        btn.onclick = () => {
+            this.cityInput.value = ''; // Clear input if button clicked
+            this.getWeather(city);
+        };
+        this.recentSearchesContainer.appendChild(btn);
+    });
+};
+
+/**
+ * Persistence: Load last searched city on startup
+ */
+WeatherApp.prototype.loadLastCity = function () {
+    const lastCity = localStorage.getItem('lastCity');
+    if (lastCity) {
+        this.getWeather(lastCity);
+    } else {
+        this.showWelcome();
+    }
+};
+
+/**
+ * Persistence: Clear all history
+ */
+WeatherApp.prototype.clearHistory = function () {
+    if (confirm('Are you sure you want to clear your search history?')) {
+        this.recentSearches = [];
+        localStorage.removeItem('recentSearches');
+        localStorage.removeItem('lastCity');
+        this.displayRecentSearches();
+        this.showWelcome();
+    }
 };
 
 // Initialize the application with the API key
