@@ -171,6 +171,74 @@ h1 {
     font-style: italic;
 }
 
+/* Recent Searches Section */
+.recent-searches-section {
+    margin: 20px 0;
+    text-align: left;
+    display: none;
+    /* Hidden initially, shown via JS */
+}
+
+.recent-searches-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.recent-searches-header h4 {
+    font-size: 0.95rem;
+    color: #555;
+    font-weight: 600;
+}
+
+.clear-history-btn {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid #ffccd5;
+    color: #c53030;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-history-btn:hover {
+    background: #fff5f5;
+    border-color: #fc8181;
+}
+
+#recent-searches-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.recent-search-btn {
+    padding: 8px 18px;
+    background: #f8f9fa;
+    border: 1px solid #eee;
+    color: #444;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 500;
+}
+
+.recent-search-btn:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    border-color: transparent;
+}
+
+.recent-search-btn:active {
+    transform: scale(0.95);
+}
+
 /* Forecast Section Styles */
 .forecast-section {
     margin-top: 40px;
